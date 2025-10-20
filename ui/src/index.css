@@ -1,0 +1,32 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --safavid-red: #9D2235;
+  --safavid-gold: #D4AF37;
+  --turkic-turquoise: #3AB795;
+  --navy: #003366;
+  --card-bg: #023a6b;
+  --text: #ffffff;
+  --text-secondary: #b0d0e0;
+  --border: #2a5a8a;
+  --input-bg: #012f4f;
+}
+
+body {
+  font-family: 'Fira Sans', system-ui, sans-serif;
+  background: linear-gradient(135deg, var(--navy), #002244);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
