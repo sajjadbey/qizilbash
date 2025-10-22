@@ -43,24 +43,27 @@
 /* Tabs Container */
 .tabs {
   display: flex;
-  position: relative;
   background: rgba(0, 30, 60, 0.4);
   padding: 0;
   margin: 0;
+  overflow-x: auto; /* Allow horizontal scroll on small screens */
+  scrollbar-width: none; /* Hide scrollbar (Firefox) */
 }
 
 /* Tab Buttons */
 .tab {
   flex: 1;
-  padding: 18px 0;
+  min-width: 0; /* Critical: allows shrinking */
+  padding: 16px 8px;
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
   position: relative;
   transition: color 0.2s;
+  white-space: nowrap;
   text-align: center;
 }
 
@@ -68,22 +71,21 @@
   color: var(--text);
 }
 
-/* Animated Indicator */
+/* Animated underline (pure CSS, no extra div) */
 .tab::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  width: 0;
   height: 2px;
   background: var(--safavid-gold);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 0.3s ease;
+  transform: translateX(-50%);
+  transition: width 0.25s ease;
 }
 
 .tab.active::after {
-  transform: scaleX(1);
+  width: 60%; /* or 80% — adjust as needed */
 }
 .tab-indicator {
   position: absolute;

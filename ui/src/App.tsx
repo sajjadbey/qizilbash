@@ -1,11 +1,12 @@
 // src/App.tsx
 import { useState } from 'react';
 import './App.css';
-import DictionaryTab from './components/DictionaryTab';
-import TransliteratorTab from './components/TransliteratorTab';
+import { tabs } from './tabs';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dictionary' | 'transliterator'>('dictionary');
+  const [activeTabId, setActiveTabId] = useState<string>(tabs[0].id);
+
+  const activeTab = tabs.find(tab => tab.id === activeTabId) || tabs[0];
 
   return (
     <div className="layout">
@@ -17,27 +18,23 @@ export default function App() {
 
       {/* Main Content (Centered Card) */}
       <main className="card">
-        {/* Tabs */}
+        {/* Dynamic Tabs */}
         <div className="tabs">
-          <button
-            className={activeTab === 'dictionary' ? 'tab active' : 'tab'}
-            onClick={() => setActiveTab('dictionary')}
-          >
-            Dictionary
-          </button>
-          <button
-            className={activeTab === 'transliterator' ? 'tab active' : 'tab'}
-            onClick={() => setActiveTab('transliterator')}
-          >
-            Transliterator
-          </button>
-          <div className="tab-indicator"></div>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab ${activeTabId === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTabId(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+          {/* Optional: animated indicator (see CSS below) */}
         </div>
 
-        {/* Tab Content */}
+        {/* Dynamic Tab Content */}
         <div className="tab-content">
-          {activeTab === 'dictionary' && <DictionaryTab />}
-          {activeTab === 'transliterator' && <TransliteratorTab />}
+          <activeTab.component />
         </div>
       </main>
 
