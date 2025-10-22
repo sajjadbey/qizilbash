@@ -190,25 +190,93 @@
   margin-top: 12px;
 }
 
-/* Transliterator */
+/* Transliterator Tab */
 .transliterator {
-  text-align: center;
-  padding: 30px 20px;
+  width: 100%;
 }
-.transliterator h3 {
+
+.transliterator-title {
   font-size: 1.6rem;
   color: var(--turkic-turquoise);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
-.transliterator p {
+
+.transliterator-desc {
   color: var(--text-secondary);
   margin-bottom: 24px;
   line-height: 1.6;
 }
-.placeholder {
+
+/* Two-column layout */
+.transliterator-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.transliterator-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-label {
+  font-size: 0.95rem;
   color: var(--safavid-gold);
-  font-style: italic;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.transliterator-input,
+.transliterator-output {
+  width: 100%;
+  min-height: 200px;
+  padding: 14px;
   font-size: 1.1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  resize: vertical;
+  font-family: 'Fira Sans', system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.transliterator-input:focus,
+.transliterator-output:focus {
+  outline: none;
+  border-color: var(--safavid-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+}
+
+.transliterator-output {
+  background: rgba(2, 40, 70, 0.4);
+}
+
+/* Error message */
+.transliterator-error {
+  color: #ff6b6b;
+  background: rgba(157, 34, 53, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+/* Hint */
+.transliterator-hint {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  text-align: center;
+}
+
+.transliterator-hint code {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
 }
 
 /* Footer */
