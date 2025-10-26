@@ -279,6 +279,36 @@
   font-family: monospace;
 }
 
+/* Scrollable dictionary results */
+.dictionary .results {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px; /* Compensate for scrollbar */
+  margin-top: 16px;
+}
+
+/* Custom scrollbar for modern look */
+.dictionary .results::-webkit-scrollbar {
+  width: 8px;
+}
+.dictionary .results::-webkit-scrollbar-track {
+  background: rgba(0, 40, 70, 0.3);
+  border-radius: 4px;
+}
+.dictionary .results::-webkit-scrollbar-thumb {
+  background: var(--safavid-gold);
+  border-radius: 4px;
+}
+.dictionary .results::-webkit-scrollbar-thumb:hover {
+  background: #b89a2e;
+}
+
+/* Firefox support */
+.dictionary .results {
+  scrollbar-width: thin;
+  scrollbar-color: var(--safavid-gold) rgba(0, 40, 70, 0.3);
+}
+
 /* Footer */
 .footer {
   margin-top: 30px;
