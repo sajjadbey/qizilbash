@@ -283,7 +283,7 @@
 
 /* Scrollable dictionary results */
 .dictionary .results {
-  max-height: 400px;
+  max-height: 600px;
   overflow-y: auto;
   padding-right: 8px;
   margin-top: 16px;
@@ -332,7 +332,4 @@
   .header h1 { font-size: 2rem; }
   .tab { padding: 16px; font-size: 1rem; }
   .card { border-radius: 16px; }
-  .dictionary .results {
-    max-height: 300px;
-  }
 }
