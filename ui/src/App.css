@@ -283,8 +283,11 @@
 .dictionary .results {
   max-height: 400px;
   overflow-y: auto;
-  padding-right: 8px; /* Compensate for scrollbar */
+  padding-right: 8px;
   margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Custom scrollbar for modern look */
@@ -323,4 +326,7 @@
   .header h1 { font-size: 2rem; }
   .tab { padding: 16px; font-size: 1rem; }
   .card { border-radius: 16px; }
+  .dictionary .results {
+    max-height: 300px;
+  }
 }
