@@ -10,7 +10,7 @@ type Word = {
   word_type: string;
 };
 
-const API_BASE = '/api/dict/';
+const API_BASE = '/api/dict';
 
 export default function DictionaryTab() {
   const [query, setQuery] = useState('');
