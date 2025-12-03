@@ -19,7 +19,6 @@ export default function TransliteratorTab() {
       setLoading(true);
       setError(null);
 
-      // URL-encode the text (handles ə, ş, etc.)
       const encodedText = encodeURIComponent(inputText);
       const url = `/api/convert/?text=${encodedText}&source=latin&target=arabic`;
 
@@ -38,55 +37,69 @@ export default function TransliteratorTab() {
           setOutputText('');
           setLoading(false);
         });
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [inputText]);
 
   return (
-    <div className="transliterator">
-      <h3 className="transliterator-title">Azerbaijani Transliterator</h3>
-      <p className="transliterator-desc">
-        Type in Latin Azerbaijani — see real-time conversion to Arabic script.
-      </p>
-      <p className="transliterator-desc">
-        Under Development ! ⚠️
-      </p>
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg space-y-6">
+      <div className="text-center space-y-2">
+        <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Azerbaijani Transliterator
+        </h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          Type in Latin Azerbaijani and see real-time conversion to Arabic script.
+        </p>
+        <p className="text-yellow-600 dark:text-yellow-400 font-medium">
+          Under Development ⚠️
+        </p>
+      </div>
 
-      <div className="transliterator-grid">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Input */}
-        <div className="transliterator-panel">
-          <label htmlFor="latin-input" className="panel-label">Latin Script</label>
+        <div className="flex flex-col">
+          <label htmlFor="latin-input" className="mb-2 font-semibold text-gray-700 dark:text-gray-200">
+            Latin Script
+          </label>
           <textarea
             id="latin-input"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="e.g. səlâm, şəhər, dıl..."
-            className="transliterator-input"
+            className="resize-none p-4 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:text-white transition-all min-h-[120px]"
             dir="ltr"
             lang="az"
           />
         </div>
 
         {/* Output */}
-        <div className="transliterator-panel">
-          <label htmlFor="arabic-output" className="panel-label">Arabic Script</label>
+        <div className="flex flex-col">
+          <label htmlFor="arabic-output" className="mb-2 font-semibold text-gray-700 dark:text-gray-200">
+            Arabic Script
+          </label>
           <textarea
             id="arabic-output"
             value={outputText}
             readOnly
             placeholder={loading ? 'Converting...' : 'Result will appear here'}
-            className="transliterator-output"
+            className={`resize-none p-4 border rounded-lg shadow-sm min-h-[120px] transition-all
+              ${loading ? 'bg-gray-100 dark:bg-gray-800 text-gray-400' : 'bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white'}
+              border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400`}
             dir="rtl"
             lang="az-Arab"
           />
         </div>
       </div>
 
-      {error && <div className="transliterator-error">{error}</div>}
-      
-      <div className="transliterator-hint">
-        Supports: <code>ə, ş, ğ, ç, ö, ü, ı</code>
+      {error && (
+        <div className="text-red-600 dark:text-red-400 font-medium text-center">
+          {error}
+        </div>
+      )}
+
+      <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
+        Supports: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">ə, ş, ğ, ç, ö, ü, ı</code>
       </div>
     </div>
   );
