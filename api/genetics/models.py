@@ -130,9 +130,9 @@ class HistoricalPeriod(models.Model):
 
 class GeneticSample(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    country = models.ForeignKey(Country,null=True, blank=True, on_delete=models.PROTECT)
-    province = models.ForeignKey(Province,null=True, blank=True, on_delete=models.PROTECT)
-    city = models.ForeignKey(City,null=True, blank=True, on_delete=models.PROTECT)
+    country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.PROTECT)
+    province = models.ForeignKey(Province, null=True, blank=True, on_delete=models.PROTECT)
+    city = models.ForeignKey(City, null=True, blank=True, on_delete=models.PROTECT)
     y_dna = models.ForeignKey(YDNATree, null=True, blank=True, on_delete=models.SET_NULL)
     mt_dna = models.ForeignKey(MTDNATree, null=True, blank=True, on_delete=models.SET_NULL)
     historical_period = models.ForeignKey(
@@ -143,12 +143,10 @@ class GeneticSample(models.Model):
         help_text="Approximate time period of the individual"
     )
     description = models.TextField(blank=True)
-
-    # Optional: Add gender if needed (Y-DNA only applies to males)
-    # gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], blank=True)
+    count = models.PositiveIntegerField(default=1, help_text="Number of individuals represented by this sample")
 
     def __str__(self):
-        return self.name
+        return f"{self.name} (n={self.count})"
 
     class Meta:
         verbose_name = "Genetic Sample"
