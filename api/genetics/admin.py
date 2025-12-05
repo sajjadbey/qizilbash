@@ -70,7 +70,7 @@ class HistoricalPeriodAdmin(admin.ModelAdmin):
 # Update GeneticSampleAdmin
 @admin.register(GeneticSample)
 class GeneticSampleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'y_dna', 'mt_dna', 'historical_period')
+    list_display = ('name', 'y_dna', 'mt_dna', 'historical_period', 'count')
     list_filter = (
         'city__province__country',
         'city__province',
@@ -86,8 +86,15 @@ class GeneticSampleAdmin(admin.ModelAdmin):
         'historical_period__name',
     )
     autocomplete_fields = ('city', 'y_dna', 'mt_dna', 'historical_period')
-    fields = ('name','country', 'province', 'city', 'y_dna', 'mt_dna', 'historical_period', 'description')
-
-    #def city_with_province(self, obj):
-        #return f"{obj.city.province.name}"
-    #city_with_province.short_description = 'Location' # type: ignore
+    fields = (
+        'name',
+        'country',
+        'province',
+        'city',
+        'y_dna',
+        'mt_dna',
+        'historical_period',
+        'count',
+        'description'
+    )
+    list_editable = ('count',)
