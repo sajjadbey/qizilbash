@@ -13,7 +13,6 @@ class HistoricalPeriodSerializer(serializers.ModelSerializer):
 
 
 class GeneticSampleSerializer(serializers.ModelSerializer):
-    # Direct flat string fields from foreign keys
     country = serializers.CharField(source='country.name', allow_null=True)
     province = serializers.CharField(source='province.name', allow_null=True)
     city = serializers.CharField(source='city.name', allow_null=True)
@@ -32,7 +31,8 @@ class GeneticSampleSerializer(serializers.ModelSerializer):
             'y_dna',
             'mt_dna',
             'historical_period',
-            'description'
+            'description',
+            'count',
         )
 
     def get_y_dna(self, obj):
