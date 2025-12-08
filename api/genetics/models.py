@@ -1,6 +1,5 @@
-from django.db import models
-
 # models.py
+from django.db import models
 
 class Country(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -37,6 +36,17 @@ class City(models.Model):
 
     def __str__(self):
         return f"{self.name}, {self.province.name}"
+    
+class Ethnicity(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    provinces = models.ManyToManyField(Province, related_name='ethnicities', blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Ethnicity"
+        verbose_name_plural = "Ethnicities"
     
 class YDNATree(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -124,7 +134,7 @@ class HistoricalPeriod(models.Model):
         return f"{self.name} ({format_year(self.start_year)} – {end})"
 
     class Meta:
-        ordering = ['start_year']  # Chronological order
+        ordering = ['start_year']
         verbose_name = "Historical Period"
         verbose_name_plural = "Historical Periods"
 
@@ -133,6 +143,7 @@ class GeneticSample(models.Model):
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.PROTECT)
     province = models.ForeignKey(Province, null=True, blank=True, on_delete=models.PROTECT)
     city = models.ForeignKey(City, null=True, blank=True, on_delete=models.PROTECT)
+    ethnicity = models.ForeignKey(Ethnicity, null=True, blank=True, on_delete=models.PROTECT)
     y_dna = models.ForeignKey(YDNATree, null=True, blank=True, on_delete=models.SET_NULL)
     mt_dna = models.ForeignKey(MTDNATree, null=True, blank=True, on_delete=models.SET_NULL)
     historical_period = models.ForeignKey(

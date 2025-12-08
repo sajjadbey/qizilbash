@@ -1,7 +1,6 @@
 # admin.py
-
 from django.contrib import admin
-from .models import HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, GeneticSample
+from .models import HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, GeneticSample, Ethnicity
 
 
 @admin.register(Country)
@@ -37,7 +36,14 @@ class CityAdmin(admin.ModelAdmin):
 
     def province_country(self, obj):
         return obj.province.country.name
-    province_country.short_description = 'Country'  # type: ignore
+    province_country.short_description = 'Country'
+
+
+@admin.register(Ethnicity)
+class EthnicityAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    filter_horizontal = ('provinces',)
 
 
 @admin.register(YDNATree)
@@ -63,17 +69,17 @@ class HistoricalPeriodAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
     def display_range(self, obj):
-        return str(obj)  # Reuse __str__ logic
-    display_range.short_description = "Period Range"  # type: ignore
+        return str(obj)
+    display_range.short_description = "Period Range"
 
 
-# Update GeneticSampleAdmin
 @admin.register(GeneticSample)
 class GeneticSampleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'y_dna', 'mt_dna', 'historical_period', 'count')
+    list_display = ('name', 'ethnicity', 'y_dna', 'mt_dna', 'historical_period', 'count')
     list_filter = (
         'city__province__country',
         'city__province',
+        'ethnicity',
         'y_dna',
         'mt_dna',
         'historical_period',
@@ -81,16 +87,18 @@ class GeneticSampleAdmin(admin.ModelAdmin):
     search_fields = (
         'name',
         'city__name',
+        'ethnicity__name',
         'y_dna__name',
         'mt_dna__name',
         'historical_period__name',
     )
-    autocomplete_fields = ('city', 'y_dna', 'mt_dna', 'historical_period')
+    autocomplete_fields = ('city', 'ethnicity', 'y_dna', 'mt_dna', 'historical_period')
     fields = (
         'name',
         'country',
         'province',
         'city',
+        'ethnicity',
         'y_dna',
         'mt_dna',
         'historical_period',
