@@ -76,6 +76,9 @@ class HistoricalPeriodAdmin(admin.ModelAdmin):
 @admin.register(GeneticSample)
 class GeneticSampleAdmin(admin.ModelAdmin):
     list_display = ('name', 'ethnicity', 'y_dna', 'mt_dna', 'historical_period', 'count')
+    
+    list_editable = ('ethnicity', 'count',)
+
     list_filter = (
         'city__province__country',
         'city__province',
@@ -105,4 +108,3 @@ class GeneticSampleAdmin(admin.ModelAdmin):
         'count',
         'description'
     )
-    list_editable = ('count',)
