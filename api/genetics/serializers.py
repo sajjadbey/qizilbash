@@ -1,7 +1,27 @@
-# serializers.py
-
 from rest_framework import serializers
-from .models import GeneticSample, HistoricalPeriod
+from .models import GeneticSample, HistoricalPeriod, Country, Province, City
+
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ['name']
+
+
+class ProvinceSerializer(serializers.ModelSerializer):
+    country = serializers.CharField(source='country.name')
+    
+    class Meta:
+        model = Province
+        fields = ['name', 'country']
+
+
+class CitySerializer(serializers.ModelSerializer):
+    province = serializers.CharField(source='province.name')
+    
+    class Meta:
+        model = City
+        fields = ['name', 'province']
 
 
 class HistoricalPeriodSerializer(serializers.ModelSerializer):
