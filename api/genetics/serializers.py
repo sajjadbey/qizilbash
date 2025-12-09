@@ -31,11 +31,16 @@ class EthnicitySerializer(serializers.ModelSerializer):
         fields = ['name']
         
 class TribeSerializer(serializers.ModelSerializer):
-    ethnicity = serializers.CharField(source='ethnicity.name')
+    ethnicity = serializers.SerializerMethodField()
 
     class Meta:
         model = Tribe
         fields = ['name', 'ethnicity', 'historical_note']
+    def get_ethnicity(self, obj):
+        """Returns the ethnicity name, or None/empty string if not set."""
+        if obj.ethnicity:
+            return obj.ethnicity.name
+        return None 
 
 
 class ClanSerializer(serializers.ModelSerializer):
