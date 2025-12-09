@@ -1,5 +1,6 @@
 # models.py
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 
 class Country(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -47,6 +48,59 @@ class Ethnicity(models.Model):
     class Meta:
         verbose_name = "Ethnicity"
         verbose_name_plural = "Ethnicities"
+        
+class Tribe(models.Model):
+    name = models.CharField(max_length=100)
+    ethnicity = models.ForeignKey(
+        Ethnicity,
+        on_delete=models.SET_NULL,
+        related_name='tribes',
+        null=True, 
+        blank=True, 
+        help_text="The main ethnic group this tribe belongs to."
+    )
+    historical_note = models.TextField(blank=True, help_text="A brief historical or cultural note about the tribe.")
+    
+    class Meta:
+        verbose_name = "Tribe"
+        verbose_name_plural = "Tribes"
+        
+        constraints = [
+            UniqueConstraint(
+                fields=['name', 'ethnicity'],
+                name='unique_tribe_per_ethnicity',
+                condition=Q(ethnicity__isnull=False)
+            ),
+            UniqueConstraint(
+                fields=['name'],
+                name='unique_tribe_if_unassigned',
+                condition=Q(ethnicity__isnull=True)
+            )
+        ]
+
+    def __str__(self):
+        if self.ethnicity:
+            return f"{self.name} ({self.ethnicity.name})"
+        return f"{self.name} (Unassigned Ethnicity)"
+    
+class Clan(models.Model):
+    name = models.CharField(max_length=100)
+    tribe = models.ForeignKey(
+        Tribe,
+        on_delete=models.CASCADE,
+        related_name='clans',
+        help_text="The tribe this clan belongs to."
+    )
+
+    common_ancestor = models.CharField(max_length=100, blank=True, help_text="Name of the legendary or historical common ancestor.")
+    
+    class Meta:
+        unique_together = ('name', 'tribe')
+        verbose_name = "Clan"
+        verbose_name_plural = "Clans"
+
+    def __str__(self):
+        return f"{self.name} Clan ({self.tribe.name})"
     
 class YDNATree(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -144,6 +198,8 @@ class GeneticSample(models.Model):
     province = models.ForeignKey(Province, null=True, blank=True, on_delete=models.PROTECT)
     city = models.ForeignKey(City, null=True, blank=True, on_delete=models.PROTECT)
     ethnicity = models.ForeignKey(Ethnicity, null=True, blank=True, on_delete=models.PROTECT)
+    tribe = models.ForeignKey(Tribe, null=True, blank=True, on_delete=models.PROTECT, help_text="The tribe of the sampled individual.")
+    clan = models.ForeignKey(Clan, null=True, blank=True, on_delete=models.PROTECT, help_text="The clan of the sampled individual.")
     y_dna = models.ForeignKey(YDNATree, null=True, blank=True, on_delete=models.SET_NULL)
     mt_dna = models.ForeignKey(MTDNATree, null=True, blank=True, on_delete=models.SET_NULL)
     historical_period = models.ForeignKey(

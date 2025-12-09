@@ -1,6 +1,6 @@
 # admin.py
 from django.contrib import admin
-from .models import HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, GeneticSample, Ethnicity
+from .models import HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, GeneticSample, Ethnicity, Tribe, Clan
 
 
 @admin.register(Country)
@@ -46,6 +46,32 @@ class EthnicityAdmin(admin.ModelAdmin):
     filter_horizontal = ('provinces',)
 
 
+# --- NEW ADMIN CLASSES: TRIBE and CLAN ---
+
+@admin.register(Tribe)
+class TribeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'ethnicity')
+    list_filter = ('ethnicity',)
+    search_fields = ('name', 'ethnicity__name')
+    autocomplete_fields = ('ethnicity',)
+    fields = ('name', 'ethnicity', 'historical_note')
+
+
+@admin.register(Clan)
+class ClanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'tribe', 'common_ancestor_display')
+    list_filter = ('tribe__ethnicity', 'tribe',)
+    search_fields = ('name', 'tribe__name', 'common_ancestor')
+    autocomplete_fields = ('tribe',)
+    fields = ('name', 'tribe', 'common_ancestor')
+
+    def common_ancestor_display(self, obj):
+        return obj.common_ancestor if obj.common_ancestor else '-'
+    common_ancestor_display.short_description = 'Common Ancestor'
+
+# ------------------------------------------
+
+
 @admin.register(YDNATree)
 class YDNATreeAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent')
@@ -75,14 +101,16 @@ class HistoricalPeriodAdmin(admin.ModelAdmin):
 
 @admin.register(GeneticSample)
 class GeneticSampleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'ethnicity', 'y_dna', 'mt_dna', 'historical_period', 'count')
+    list_display = ('name', 'ethnicity', 'tribe', 'clan', 'y_dna', 'mt_dna', 'historical_period', 'count')
     
-    list_editable = ('ethnicity', 'count',)
+    list_editable = ('ethnicity', 'count', 'tribe')
 
     list_filter = (
         'city__province__country',
         'city__province',
         'ethnicity',
+        'tribe', # Added
+        'clan', # Added
         'y_dna',
         'mt_dna',
         'historical_period',
@@ -91,17 +119,21 @@ class GeneticSampleAdmin(admin.ModelAdmin):
         'name',
         'city__name',
         'ethnicity__name',
+        'tribe__name', # Added
+        'clan__name', # Added
         'y_dna__name',
         'mt_dna__name',
         'historical_period__name',
     )
-    autocomplete_fields = ('city', 'ethnicity', 'y_dna', 'mt_dna', 'historical_period')
+    autocomplete_fields = ('city', 'ethnicity', 'tribe', 'clan', 'y_dna', 'mt_dna', 'historical_period') # Updated
     fields = (
         'name',
         'country',
         'province',
         'city',
         'ethnicity',
+        'tribe', # Added
+        'clan', # Added
         'y_dna',
         'mt_dna',
         'historical_period',

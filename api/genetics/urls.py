@@ -8,4 +8,6 @@ urlpatterns = [
     path('provinces/', views.ProvinceListView.as_view(), name='province-list'),
     path('cities/', views.CityListView.as_view(), name='city-list'),
     path('ethnicities/', views.EthnicityListView.as_view(), name='ethnicity-list'),
+    path('tribes/', views.TribeListView.as_view(), name='tribe-list'),
+    path('clans/', views.ClanListView.as_view(), name='clan-list'),
 ]

@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'dict',
-    'converter'
+    'converter',
+    'genetics',
 ]
 
 MIDDLEWARE = [

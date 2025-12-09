@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import GeneticSample, HistoricalPeriod, Country, Province, City, Ethnicity
+from .models import GeneticSample, HistoricalPeriod, Country, Province, City, Ethnicity, Tribe, Clan
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -29,6 +29,22 @@ class EthnicitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Ethnicity
         fields = ['name']
+        
+class TribeSerializer(serializers.ModelSerializer):
+    ethnicity = serializers.CharField(source='ethnicity.name')
+
+    class Meta:
+        model = Tribe
+        fields = ['name', 'ethnicity', 'historical_note']
+
+
+class ClanSerializer(serializers.ModelSerializer):
+    tribe = serializers.CharField(source='tribe.name')
+    ethnicity = serializers.CharField(source='tribe.ethnicity.name', read_only=True)
+
+    class Meta:
+        model = Clan
+        fields = ['name', 'tribe', 'ethnicity', 'common_ancestor']
 
 
 class HistoricalPeriodSerializer(serializers.ModelSerializer):
@@ -57,6 +73,8 @@ class GeneticSampleSerializer(serializers.ModelSerializer):
             'province',
             'city',
             'ethnicity',
+            'tribe',
+            'clan',
             'y_dna',
             'mt_dna',
             'historical_period',

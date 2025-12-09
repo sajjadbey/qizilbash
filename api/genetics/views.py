@@ -1,13 +1,14 @@
-# views.py
 from rest_framework import generics
 from django.db.models import Prefetch, Q
-from .models import GeneticSample, Country, Province, City, Ethnicity
+from .models import GeneticSample, Country, Province, City, Ethnicity, Tribe, Clan
 from .serializers import (
     GeneticSampleSerializer, 
     CountrySerializer, 
     ProvinceSerializer, 
     CitySerializer,
-    EthnicitySerializer
+    EthnicitySerializer,
+    TribeSerializer, # Added
+    ClanSerializer # Added
 )
 
 
@@ -21,6 +22,8 @@ class SampleListView(generics.ListAPIView):
             'province',
             'city',
             'ethnicity',
+            'tribe', # Added
+            'clan', # Added
             'y_dna',
             'mt_dna',
             'historical_period'
@@ -30,8 +33,10 @@ class SampleListView(generics.ListAPIView):
         province = self.request.query_params.get('province')
         city = self.request.query_params.get('city')
         ethnicity = self.request.query_params.get('ethnicity')
+        tribe = self.request.query_params.get('tribe') # Added
+        clan = self.request.query_params.get('clan') # Added
 
-        # Cascade filtering: city > province > country, plus separate ethnicity filter
+        # Cascade filtering: city > province > country
         if city:
             queryset = queryset.filter(city__name=city)
         elif province:
@@ -39,6 +44,12 @@ class SampleListView(generics.ListAPIView):
         elif country:
             queryset = queryset.filter(country__name=country)
 
+        # Hierarchical filtering: clan > tribe
+        if clan:
+            queryset = queryset.filter(clan__name=clan)
+        elif tribe:
+            queryset = queryset.filter(tribe__name=tribe)
+        
         if ethnicity:
             queryset = queryset.filter(ethnicity__name=ethnicity)
             
@@ -86,12 +97,6 @@ class EthnicityListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Ethnicity.objects.all().order_by('name')
         
-        # Optional: Filter ethnicities based on selected country/province
-        # Note: A simple filter based on GeneticSample location is not applied here,
-        # but an optional filter based on the M2M field `provinces` is possible.
-        # For simplicity, we just return all ethnicities for now, but a more complex
-        # query is needed if you want to filter based on samples in the selected location.
-
         province = self.request.query_params.get('province')
         if province:
             # Filters ethnicities that are linked to the selected province via M2M
@@ -102,4 +107,36 @@ class EthnicityListView(generics.ListAPIView):
                 # Filters ethnicities that are linked to any province in the selected country
                 queryset = queryset.filter(provinces__country__name=country).distinct()
 
+        return queryset.order_by('name')
+
+
+class TribeListView(generics.ListAPIView):
+    serializer_class = TribeSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = Tribe.objects.select_related('ethnicity').all()
+        
+        ethnicity = self.request.query_params.get('ethnicity')
+        if ethnicity:
+            queryset = queryset.filter(ethnicity__name=ethnicity)
+            
+        return queryset.order_by('name')
+
+
+class ClanListView(generics.ListAPIView):
+    serializer_class = ClanSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = Clan.objects.select_related('tribe__ethnicity').all()
+        
+        tribe = self.request.query_params.get('tribe')
+        if tribe:
+            queryset = queryset.filter(tribe__name=tribe)
+        else:
+            ethnicity = self.request.query_params.get('ethnicity')
+            if ethnicity:
+                queryset = queryset.filter(tribe__ethnicity__name=ethnicity)
+            
         return queryset.order_by('name')
