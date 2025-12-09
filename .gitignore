@@ -139,7 +139,7 @@ dmypy.json
 node_modules/
 bun.lock
 bun.lockb
-
+migrations/
 # Build outputs
 /dist
 /dist-ssr
