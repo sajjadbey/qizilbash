@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/dict/', include('dict.urls')),
     path('api/convert/', include('converter.urls')),
+    path('genetics/', include('genetics.urls')),
 ]
