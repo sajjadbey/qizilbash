@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import GeneticSample, HistoricalPeriod, Country, Province, City, Ethnicity, Tribe, Clan
+from .models import GeneticSample, HistoricalPeriod, Country, Province, City, Ethnicity, Tribe, Clan, YDNATree
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -58,6 +58,33 @@ class HistoricalPeriodSerializer(serializers.ModelSerializer):
     class Meta:
         model = HistoricalPeriod
         fields = ('name', 'start_year', 'end_year', 'display')
+
+
+class YDNATreeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+    root_haplogroup = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = YDNATree
+        fields = ['name', 'root_haplogroup', 'children']
+    
+    def get_children(self, obj):
+        children = obj.children.all()
+        return YDNATreeSerializer(children, many=True).data if children.exists() else []
+    
+    def get_root_haplogroup(self, obj):
+        # Don't include root_haplogroup if this is already a root haplogroup
+        if obj.parent is None:
+            return None
+        return obj.get_root_haplogroup()
+
+
+class HaplogroupCountSerializer(serializers.Serializer):
+    haplogroup = serializers.CharField()
+    total_count = serializers.IntegerField()
+    direct_count = serializers.IntegerField()
+    subclade_count = serializers.IntegerField()
+    subclades = serializers.ListField(child=serializers.CharField())
 
 
 class GeneticSampleSerializer(serializers.ModelSerializer):

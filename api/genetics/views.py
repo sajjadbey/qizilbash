@@ -1,14 +1,18 @@
 from rest_framework import generics
-from django.db.models import Prefetch, Q
-from .models import GeneticSample, Country, Province, City, Ethnicity, Tribe, Clan
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.db.models import Prefetch, Q, Sum
+from .models import GeneticSample, Country, Province, City, Ethnicity, Tribe, Clan, YDNATree
 from .serializers import (
     GeneticSampleSerializer, 
     CountrySerializer, 
     ProvinceSerializer, 
     CitySerializer,
     EthnicitySerializer,
-    TribeSerializer, # Added
-    ClanSerializer # Added
+    TribeSerializer,
+    ClanSerializer,
+    YDNATreeSerializer,
+    HaplogroupCountSerializer
 )
 
 
@@ -140,3 +144,66 @@ class ClanListView(generics.ListAPIView):
                 queryset = queryset.filter(tribe__ethnicity__name=ethnicity)
             
         return queryset.order_by('name')
+
+
+class HaplogroupCountView(APIView):
+    """
+    Returns the total count of samples for a haplogroup including all its subclades.
+    Usage: /haplogroup?name=R
+    """
+    def get(self, request):
+        haplogroup_name = request.query_params.get('name')
+        
+        if not haplogroup_name:
+            return Response({'error': 'name parameter is required'}, status=400)
+        
+        try:
+            haplogroup = YDNATree.objects.get(name=haplogroup_name)
+        except YDNATree.DoesNotExist:
+            return Response({'error': f'Haplogroup {haplogroup_name} not found'}, status=404)
+        
+        # Get all descendant haplogroups
+        def get_all_descendants(node):
+            descendants = [node]
+            for child in node.children.all():
+                descendants.extend(get_all_descendants(child))
+            return descendants
+        
+        all_haplogroups = get_all_descendants(haplogroup)
+        haplogroup_ids = [h.id for h in all_haplogroups]
+        subclade_names = [h.name for h in all_haplogroups if h.id != haplogroup.id]
+        
+        # Get total count from all samples (including subclades) using the count field
+        all_samples = GeneticSample.objects.filter(y_dna__id__in=haplogroup_ids)
+        total_count = all_samples.aggregate(total=Sum('count'))['total'] or 0
+        
+        # Count samples with this haplogroup directly
+        direct_samples = GeneticSample.objects.filter(y_dna=haplogroup)
+        direct_count = direct_samples.aggregate(total=Sum('count'))['total'] or 0
+        
+        # Subclade count is the number of unique subclades (not sample count)
+        subclade_count = len(subclade_names)
+        
+        data = {
+            'haplogroup': haplogroup_name,
+            'total_count': total_count,
+            'direct_count': direct_count,
+            'subclade_count': subclade_count,
+            'subclades': subclade_names
+        }
+        
+        serializer = HaplogroupCountSerializer(data)
+        return Response(serializer.data)
+
+
+class HaplogroupListView(generics.ListAPIView):
+    """
+    Lists all haplogroups in hierarchical structure.
+    Usage: /haplogroup/all
+    """
+    serializer_class = YDNATreeSerializer
+    pagination_class = None
+    
+    def get_queryset(self):
+        # Return only root haplogroups (those without parents)
+        return YDNATree.objects.filter(parent__isnull=True).order_by('name')
