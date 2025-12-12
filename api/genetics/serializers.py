@@ -14,7 +14,7 @@ class ProvinceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Province
-        fields = ['name', 'country']
+        fields = ['name', 'country', 'latitude', 'longitude']
 
 
 class CitySerializer(serializers.ModelSerializer):
@@ -87,11 +87,22 @@ class HaplogroupCountSerializer(serializers.Serializer):
     subclades = serializers.ListField(child=serializers.CharField())
 
 
+class HaplogroupHeatmapSerializer(serializers.Serializer):
+    """Serializer for heatmap data with location coordinates and sample counts"""
+    province = serializers.CharField()
+    country = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    sample_count = serializers.IntegerField()
+    haplogroup = serializers.CharField(required=False, allow_null=True)
+
+
 class GeneticSampleSerializer(serializers.ModelSerializer):
     country = serializers.CharField(source='country.name', allow_null=True)
     province = serializers.CharField(source='province.name', allow_null=True)
     city = serializers.CharField(source='city.name', allow_null=True)
     ethnicity = serializers.CharField(source='ethnicity.name', allow_null=True)
+    coordinates = serializers.SerializerMethodField()
 
     y_dna = serializers.SerializerMethodField()
     mt_dna = serializers.SerializerMethodField()
@@ -112,7 +123,17 @@ class GeneticSampleSerializer(serializers.ModelSerializer):
             'historical_period',
             'description',
             'count',
+            'coordinates',
         )
+    
+    def get_coordinates(self, obj):
+        """Return coordinates from province if available"""
+        if obj.province and obj.province.latitude and obj.province.longitude:
+            return {
+                'latitude': float(obj.province.latitude),
+                'longitude': float(obj.province.longitude)
+            }
+        return None
 
     def get_y_dna(self, obj):
         if obj.y_dna:

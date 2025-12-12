@@ -12,7 +12,8 @@ from .serializers import (
     TribeSerializer,
     ClanSerializer,
     YDNATreeSerializer,
-    HaplogroupCountSerializer
+    HaplogroupCountSerializer,
+    HaplogroupHeatmapSerializer
 )
 
 
@@ -207,3 +208,93 @@ class HaplogroupListView(generics.ListAPIView):
     def get_queryset(self):
         # Return only root haplogroups (those without parents)
         return YDNATree.objects.filter(parent__isnull=True).order_by('name')
+
+
+class HaplogroupHeatmapView(APIView):
+    """
+    Returns aggregated sample counts by location with coordinates for heatmap visualization.
+    
+    Query parameters:
+    - haplogroup: Filter by specific Y-DNA haplogroup (optional)
+    - country: Filter by country (optional)
+    - ethnicity: Filter by ethnicity (optional)
+    
+    Usage: 
+    - /haplogroup/heatmap/ (all samples)
+    - /haplogroup/heatmap/?haplogroup=R (samples with R haplogroup and subclades)
+    - /haplogroup/heatmap/?country=Iran (samples from Iran)
+    """
+    def get(self, request):
+        haplogroup_name = request.query_params.get('haplogroup')
+        country = request.query_params.get('country')
+        ethnicity = request.query_params.get('ethnicity')
+        
+        # Start with all samples
+        queryset = GeneticSample.objects.select_related(
+            'province__country',
+            'y_dna',
+            'country',
+            'ethnicity'
+        ).filter(
+            province__isnull=False,
+            province__latitude__isnull=False,
+            province__longitude__isnull=False
+        )
+        
+        # Filter by haplogroup (including subclades)
+        if haplogroup_name:
+            try:
+                haplogroup = YDNATree.objects.get(name=haplogroup_name)
+                
+                # Get all descendant haplogroups
+                def get_all_descendants(node):
+                    descendants = [node]
+                    for child in node.children.all():
+                        descendants.extend(get_all_descendants(child))
+                    return descendants
+                
+                all_haplogroups = get_all_descendants(haplogroup)
+                haplogroup_ids = [h.id for h in all_haplogroups]
+                queryset = queryset.filter(y_dna__id__in=haplogroup_ids)
+            except YDNATree.DoesNotExist:
+                return Response({'error': f'Haplogroup {haplogroup_name} not found'}, status=404)
+        
+        # Filter by country
+        if country:
+            queryset = queryset.filter(country__name=country)
+        
+        # Filter by ethnicity
+        if ethnicity:
+            queryset = queryset.filter(ethnicity__name=ethnicity)
+        
+        # Aggregate by province
+        from django.db.models import Sum
+        from collections import defaultdict
+        
+        location_data = defaultdict(lambda: {'count': 0, 'province': None, 'country': None, 'lat': None, 'lng': None})
+        
+        for sample in queryset:
+            key = (sample.province.id, sample.province.name)
+            location_data[key]['count'] += sample.count
+            location_data[key]['province'] = sample.province.name
+            location_data[key]['country'] = sample.province.country.name
+            location_data[key]['lat'] = sample.province.latitude
+            location_data[key]['lng'] = sample.province.longitude
+        
+        # Format data for response
+        heatmap_data = []
+        for (province_id, province_name), data in location_data.items():
+            heatmap_data.append({
+                'province': data['province'],
+                'country': data['country'],
+                'latitude': data['lat'],
+                'longitude': data['lng'],
+                'sample_count': data['count'],
+                'haplogroup': haplogroup_name if haplogroup_name else None
+            })
+        
+        # Sort by sample count descending
+        heatmap_data.sort(key=lambda x: x['sample_count'], reverse=True)
+        
+        serializer = HaplogroupHeatmapSerializer(heatmap_data, many=True)
+        return Response(serializer.data)
