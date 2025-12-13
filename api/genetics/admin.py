@@ -1,5 +1,6 @@
 # admin.py
 from django.contrib import admin
+from leaflet.admin import LeafletGeoAdmin
 from .models import HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, GeneticSample, Ethnicity, Tribe, Clan
 
 
@@ -15,11 +16,17 @@ class ProvinceInline(admin.TabularInline):
 
 
 @admin.register(Province)
-class ProvinceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'country')
+class ProvinceAdmin(LeafletGeoAdmin):
+    list_display = ('name', 'code', 'country')
     list_filter = ('country',)
-    search_fields = ('name', 'country__name')
+    search_fields = ('name', 'code', 'country__name')
     autocomplete_fields = ('country',)
+    
+    # This enables the Leaflet map widget
+    settings_overrides = {
+        'DEFAULT_CENTER': (32.0, 53.0),
+        'DEFAULT_ZOOM': 5,
+    }
 
 
 class CityInline(admin.TabularInline):

@@ -101,8 +101,25 @@ All endpoints are prefixed with the base URL of your Django application.
 - **Response Fields:**
   - `name` - Province name
   - `country` - Country name
-  - `latitude` - Latitude coordinate
-  - `longitude` - Longitude coordinate
+  - `latitude` - Latitude coordinate (extracted from geometry centroid)
+  - `longitude` - Longitude coordinate (extracted from geometry centroid)
+  - `geometry` - GeoJSON geometry object (MultiPolygon) representing province boundary
+- **GeoJSON Geometry Format:**
+  ```json
+  {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [longitude, latitude],
+          [longitude, latitude],
+          ...
+        ]
+      ]
+    ]
+  }
+  ```
+- **Note:** Coordinates are calculated from the province's MultiPolygon geometry centroid. The geometry field contains the full province boundary as GeoJSON.
 
 ### 3.4 Cities
 - **Endpoint:** `GET /genetics/cities/`
@@ -167,7 +184,7 @@ All endpoints are prefixed with the base URL of your Django application.
 
 ### 3.10 Haplogroup Heatmap
 - **Endpoint:** `GET /genetics/haplogroup/heatmap/`
-- **Description:** Get aggregated sample counts by location with coordinates for heatmap visualization
+- **Description:** Get aggregated sample counts by location with GeoJSON geometry for heatmap visualization
 - **Query Parameters:**
   - `haplogroup` - Filter by Y-DNA haplogroup (includes subclades)
   - `country` - Filter by country
@@ -179,11 +196,27 @@ All endpoints are prefixed with the base URL of your Django application.
 - **Response:** Array of location objects with:
   - `province` - Province name
   - `country` - Country name
-  - `latitude` - Latitude coordinate
-  - `longitude` - Longitude coordinate
+  - `latitude` - Latitude coordinate (extracted from geometry centroid)
+  - `longitude` - Longitude coordinate (extracted from geometry centroid)
+  - `geometry` - GeoJSON geometry object (MultiPolygon)
   - `sample_count` - Aggregated sample count
   - `haplogroup` - Haplogroup filter (if applied)
-- **Note:** Results are sorted by sample count (descending)
+- **GeoJSON Geometry Format:**
+  ```json
+  {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [longitude, latitude],
+          [longitude, latitude],
+          ...
+        ]
+      ]
+    ]
+  }
+  ```
+- **Note:** Results are sorted by sample count (descending). Coordinates are calculated from province geometry centroids. The geometry field contains the full province boundary as GeoJSON.
 
 ---
 
@@ -218,6 +251,6 @@ Common HTTP status codes:
 1. **Pagination:** Most list endpoints have pagination disabled (`pagination_class = None`)
 2. **Filtering:** Many endpoints support hierarchical filtering (e.g., city > province > country)
 3. **Case Sensitivity:** Word searches are case-insensitive
-4. **Coordinates:** Location coordinates are available at the province level
+4. **Coordinates:** Location coordinates are extracted from province geometry centroids (MultiPolygon fields)
 5. **Haplogroup Hierarchy:** Haplogroup queries automatically include all descendant subclades
 6. **URL Encoding:** Text parameters should be URL-encoded (especially for special characters like 'ə')

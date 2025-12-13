@@ -2,6 +2,8 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Prefetch, Q, Sum
+from django.contrib.gis.geos import GEOSGeometry
+import json
 from .models import GeneticSample, Country, Province, City, Ethnicity, Tribe, Clan, YDNATree
 from .serializers import (
     GeneticSampleSerializer, 
@@ -237,8 +239,7 @@ class HaplogroupHeatmapView(APIView):
             'ethnicity'
         ).filter(
             province__isnull=False,
-            province__latitude__isnull=False,
-            province__longitude__isnull=False
+            province__geom__isnull=False
         )
         
         # Filter by haplogroup (including subclades)
@@ -278,8 +279,13 @@ class HaplogroupHeatmapView(APIView):
             location_data[key]['count'] += sample.count
             location_data[key]['province'] = sample.province.name
             location_data[key]['country'] = sample.province.country.name
-            location_data[key]['lat'] = sample.province.latitude
-            location_data[key]['lng'] = sample.province.longitude
+            # Extract coordinates from geometry centroid and store geometry
+            if sample.province.geom:
+                centroid = sample.province.geom.centroid
+                location_data[key]['lat'] = float(centroid.y)
+                location_data[key]['lng'] = float(centroid.x)
+                # Store geometry as GeoJSON
+                location_data[key]['geometry'] = json.loads(sample.province.geom.geojson)
         
         # Format data for response
         heatmap_data = []
@@ -289,6 +295,7 @@ class HaplogroupHeatmapView(APIView):
                 'country': data['country'],
                 'latitude': data['lat'],
                 'longitude': data['lng'],
+                'geometry': data.get('geometry'),
                 'sample_count': data['count'],
                 'haplogroup': haplogroup_name if haplogroup_name else None
             })

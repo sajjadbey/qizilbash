@@ -11,10 +11,34 @@ class CountrySerializer(serializers.ModelSerializer):
 
 class ProvinceSerializer(serializers.ModelSerializer):
     country = serializers.CharField(source='country.name')
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+    geometry = serializers.SerializerMethodField()
     
     class Meta:
         model = Province
-        fields = ['name', 'country', 'latitude', 'longitude']
+        fields = ['name', 'country', 'latitude', 'longitude', 'geometry']
+    
+    def get_latitude(self, obj):
+        """Extract latitude from geometry centroid"""
+        if obj.geom:
+            centroid = obj.geom.centroid
+            return float(centroid.y)
+        return None
+    
+    def get_longitude(self, obj):
+        """Extract longitude from geometry centroid"""
+        if obj.geom:
+            centroid = obj.geom.centroid
+            return float(centroid.x)
+        return None
+    
+    def get_geometry(self, obj):
+        """Return GeoJSON geometry"""
+        if obj.geom:
+            import json
+            return json.loads(obj.geom.geojson)
+        return None
 
 
 class CitySerializer(serializers.ModelSerializer):
@@ -88,11 +112,12 @@ class HaplogroupCountSerializer(serializers.Serializer):
 
 
 class HaplogroupHeatmapSerializer(serializers.Serializer):
-    """Serializer for heatmap data with location coordinates and sample counts"""
+    """Serializer for heatmap data with GeoJSON geometry and sample counts"""
     province = serializers.CharField()
     country = serializers.CharField()
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    geometry = serializers.JSONField()
     sample_count = serializers.IntegerField()
     haplogroup = serializers.CharField(required=False, allow_null=True)
 
@@ -127,11 +152,12 @@ class GeneticSampleSerializer(serializers.ModelSerializer):
         )
     
     def get_coordinates(self, obj):
-        """Return coordinates from province if available"""
-        if obj.province and obj.province.latitude and obj.province.longitude:
+        """Return coordinates from province geometry centroid if available"""
+        if obj.province and obj.province.geom:
+            centroid = obj.province.geom.centroid
             return {
-                'latitude': float(obj.province.latitude),
-                'longitude': float(obj.province.longitude)
+                'latitude': float(centroid.y),
+                'longitude': float(centroid.x)
             }
         return None
 

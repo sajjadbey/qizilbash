@@ -1,5 +1,6 @@
 # models.py
 from django.db import models
+from django.contrib.gis.db import models as gis_models
 from django.db.models import Q, UniqueConstraint
 
 class Country(models.Model):
@@ -13,11 +14,21 @@ class Country(models.Model):
         verbose_name_plural = "Countries"
 
 
-class Province(models.Model):
-    name = models.CharField(max_length=100)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='provinces')
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="Latitude coordinate")
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="Longitude coordinate")
+class Province(gis_models.Model):
+    name = gis_models.CharField(max_length=100)
+    code = gis_models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text="Province code (e.g., IR01, IR02)"
+    )
+    country = gis_models.ForeignKey('Country', on_delete=gis_models.CASCADE, related_name='provinces')
+    geom = gis_models.MultiPolygonField(
+        srid=4326,  # WGS84
+        null=True,
+        blank=True,
+        help_text="Province boundary as GeoJSON (MultiPolygon)"
+    )
 
     class Meta:
         unique_together = ('name', 'country')
