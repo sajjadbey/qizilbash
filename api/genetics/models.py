@@ -63,38 +63,24 @@ class Ethnicity(models.Model):
         verbose_name_plural = "Ethnicities"
         
 class Tribe(models.Model):
-    name = models.CharField(max_length=100)
-    ethnicity = models.ForeignKey(
+    name = models.CharField(max_length=100, unique=True)
+    ethnicities = models.ManyToManyField(
         Ethnicity,
-        on_delete=models.SET_NULL,
         related_name='tribes',
-        null=True, 
-        blank=True, 
-        help_text="The main ethnic group this tribe belongs to."
+        blank=True,
+        help_text="The ethnic groups this tribe belongs to."
     )
     historical_note = models.TextField(blank=True, help_text="A brief historical or cultural note about the tribe.")
     
     class Meta:
         verbose_name = "Tribe"
         verbose_name_plural = "Tribes"
-        
-        constraints = [
-            UniqueConstraint(
-                fields=['name', 'ethnicity'],
-                name='unique_tribe_per_ethnicity',
-                condition=Q(ethnicity__isnull=False)
-            ),
-            UniqueConstraint(
-                fields=['name'],
-                name='unique_tribe_if_unassigned',
-                condition=Q(ethnicity__isnull=True)
-            )
-        ]
 
     def __str__(self):
-        if self.ethnicity:
-            return f"{self.name} ({self.ethnicity.name})"
-        return f"{self.name} (Unassigned Ethnicity)"
+        ethnicity_names = ", ".join([e.name for e in self.ethnicities.all()])
+        if ethnicity_names:
+            return f"{self.name} ({ethnicity_names})"
+        return f"{self.name} (No Ethnicities)"
     
 class Clan(models.Model):
     name = models.CharField(max_length=100)

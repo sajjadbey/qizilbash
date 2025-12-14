@@ -122,11 +122,11 @@ class TribeListView(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        queryset = Tribe.objects.select_related('ethnicity').all()
+        queryset = Tribe.objects.prefetch_related('ethnicities').all()
         
         ethnicity = self.request.query_params.get('ethnicity')
         if ethnicity:
-            queryset = queryset.filter(ethnicity__name=ethnicity)
+            queryset = queryset.filter(ethnicities__name=ethnicity).distinct()
             
         return queryset.order_by('name')
 
@@ -136,7 +136,7 @@ class ClanListView(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        queryset = Clan.objects.select_related('tribe__ethnicity').all()
+        queryset = Clan.objects.select_related('tribe').prefetch_related('tribe__ethnicities').all()
         
         tribe = self.request.query_params.get('tribe')
         if tribe:
@@ -144,7 +144,7 @@ class ClanListView(generics.ListAPIView):
         else:
             ethnicity = self.request.query_params.get('ethnicity')
             if ethnicity:
-                queryset = queryset.filter(tribe__ethnicity__name=ethnicity)
+                queryset = queryset.filter(tribe__ethnicities__name=ethnicity).distinct()
             
         return queryset.order_by('name')
 

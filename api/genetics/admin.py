@@ -57,17 +57,21 @@ class EthnicityAdmin(admin.ModelAdmin):
 
 @admin.register(Tribe)
 class TribeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'ethnicity')
-    list_filter = ('ethnicity',)
-    search_fields = ('name', 'ethnicity__name')
-    autocomplete_fields = ('ethnicity',)
-    fields = ('name', 'ethnicity', 'historical_note')
+    list_display = ('name', 'get_ethnicities')
+    list_filter = ('ethnicities',)
+    search_fields = ('name', 'ethnicities__name')
+    filter_horizontal = ('ethnicities',)
+    fields = ('name', 'ethnicities', 'historical_note')
+    
+    def get_ethnicities(self, obj):
+        return ", ".join([e.name for e in obj.ethnicities.all()])
+    get_ethnicities.short_description = 'Ethnicities'
 
 
 @admin.register(Clan)
 class ClanAdmin(admin.ModelAdmin):
     list_display = ('name', 'tribe', 'common_ancestor_display')
-    list_filter = ('tribe__ethnicity', 'tribe',)
+    list_filter = ('tribe__ethnicities', 'tribe',)
     search_fields = ('name', 'tribe__name', 'common_ancestor')
     autocomplete_fields = ('tribe',)
     fields = ('name', 'tribe', 'common_ancestor')

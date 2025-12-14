@@ -55,25 +55,28 @@ class EthnicitySerializer(serializers.ModelSerializer):
         fields = ['name']
         
 class TribeSerializer(serializers.ModelSerializer):
-    ethnicity = serializers.SerializerMethodField()
+    ethnicities = serializers.SerializerMethodField()
 
     class Meta:
         model = Tribe
-        fields = ['name', 'ethnicity', 'historical_note']
-    def get_ethnicity(self, obj):
-        """Returns the ethnicity name, or None/empty string if not set."""
-        if obj.ethnicity:
-            return obj.ethnicity.name
-        return None 
+        fields = ['name', 'ethnicities', 'historical_note']
+    
+    def get_ethnicities(self, obj):
+        """Returns list of ethnicity names."""
+        return [ethnicity.name for ethnicity in obj.ethnicities.all()]
 
 
 class ClanSerializer(serializers.ModelSerializer):
     tribe = serializers.CharField(source='tribe.name')
-    ethnicity = serializers.CharField(source='tribe.ethnicity.name', read_only=True)
+    ethnicities = serializers.SerializerMethodField()
 
     class Meta:
         model = Clan
-        fields = ['name', 'tribe', 'ethnicity', 'common_ancestor']
+        fields = ['name', 'tribe', 'ethnicities', 'common_ancestor']
+    
+    def get_ethnicities(self, obj):
+        """Returns list of ethnicity names from the tribe."""
+        return [ethnicity.name for ethnicity in obj.tribe.ethnicities.all()]
 
 
 class HistoricalPeriodSerializer(serializers.ModelSerializer):

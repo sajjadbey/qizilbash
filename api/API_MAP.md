@@ -143,10 +143,10 @@ All endpoints are prefixed with the base URL of your Django application.
 - **Endpoint:** `GET /genetics/tribes/`
 - **Description:** List tribes with optional ethnicity filtering
 - **Query Parameters:**
-  - `ethnicity` - Filter by ethnicity name
+  - `ethnicity` - Filter by ethnicity name (returns tribes that have this ethnicity)
 - **Response Fields:**
   - `name` - Tribe name
-  - `ethnicity` - Ethnicity name (or null)
+  - `ethnicities` - Array of ethnicity names (can be empty array)
   - `historical_note` - Historical/cultural note about the tribe
 
 ### 3.7 Clans
@@ -154,11 +154,11 @@ All endpoints are prefixed with the base URL of your Django application.
 - **Description:** List clans with optional filtering
 - **Query Parameters:**
   - `tribe` - Filter by tribe name
-  - `ethnicity` - Filter by ethnicity name (if tribe not specified)
+  - `ethnicity` - Filter by ethnicity name (if tribe not specified, returns clans whose tribe has this ethnicity)
 - **Response Fields:**
   - `name` - Clan name
   - `tribe` - Tribe name
-  - `ethnicity` - Ethnicity name
+  - `ethnicities` - Array of ethnicity names from the tribe (can be empty array)
   - `common_ancestor` - Name of common ancestor
 
 ### 3.8 Haplogroup Count
