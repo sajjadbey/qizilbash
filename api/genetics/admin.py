@@ -175,6 +175,13 @@ class BlogPostAdminForm(forms.ModelForm):
                 'style': 'width: 100%;'
             }),
         }
+    
+    def clean_content(self):
+        """Preserve empty lines in Markdown content"""
+        content = self.cleaned_data.get('content', '')
+        # Don't strip the content - preserve all whitespace including empty lines
+        # This is important for Markdown formatting
+        return content
 
 
 @admin.register(BlogPost)
