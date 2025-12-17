@@ -13,4 +13,8 @@ urlpatterns = [
     path('haplogroup/', views.HaplogroupCountView.as_view(), name='haplogroup-count'),
     path('haplogroup/all/', views.HaplogroupListView.as_view(), name='haplogroup-list'),
     path('haplogroup/heatmap/', views.HaplogroupHeatmapView.as_view(), name='haplogroup-heatmap'),
+    
+    # Blog endpoints - read-only
+    path('blog/', views.BlogPostListView.as_view(), name='blog-list'),
+    path('blog/<slug:slug>/', views.BlogPostDetailView.as_view(), name='blog-detail'),
 ]

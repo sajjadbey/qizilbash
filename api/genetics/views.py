@@ -1,10 +1,14 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Prefetch, Q, Sum
+from django.db.models import Prefetch, Q, Sum, F
 from django.contrib.gis.geos import GEOSGeometry
+from django.utils import timezone
 import json
-from .models import GeneticSample, Country, Province, City, Ethnicity, Tribe, Clan, YDNATree
+from .models import (
+    GeneticSample, Country, Province, City, Ethnicity, Tribe, Clan, 
+    YDNATree, BlogPost
+)
 from .serializers import (
     GeneticSampleSerializer, 
     CountrySerializer, 
@@ -15,7 +19,8 @@ from .serializers import (
     ClanSerializer,
     YDNATreeSerializer,
     HaplogroupCountSerializer,
-    HaplogroupHeatmapSerializer
+    HaplogroupHeatmapSerializer,
+    BlogPostSerializer
 )
 
 
@@ -304,4 +309,55 @@ class HaplogroupHeatmapView(APIView):
         heatmap_data.sort(key=lambda x: x['sample_count'], reverse=True)
         
         serializer = HaplogroupHeatmapSerializer(heatmap_data, many=True)
+        return Response(serializer.data)
+
+
+# Blog Views
+class BlogPostListView(generics.ListAPIView):
+    """
+    List all published blog posts.
+    Query parameters:
+    - tag: Filter by tag
+    - search: Search in title and content
+    """
+    serializer_class = BlogPostSerializer
+    
+    def get_queryset(self):
+        # Only show published posts
+        queryset = BlogPost.objects.filter(status='published')
+        
+        # Filter by tag
+        tag = self.request.query_params.get('tag')
+        if tag:
+            queryset = queryset.filter(tags__icontains=tag)
+        
+        # Search in title and content
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) | 
+                Q(content__icontains=search) |
+                Q(excerpt__icontains=search)
+            )
+        
+        return queryset.order_by('-published_at', '-created_at')
+
+
+class BlogPostDetailView(generics.RetrieveAPIView):
+    """
+    Get a single blog post by slug and increment view count.
+    """
+    serializer_class = BlogPostSerializer
+    lookup_field = 'slug'
+    
+    def get_queryset(self):
+        return BlogPost.objects.filter(status='published')
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Increment view count
+        BlogPost.objects.filter(pk=instance.pk).update(view_count=F('view_count') + 1)
+        # Refresh instance to get updated view_count
+        instance.refresh_from_db()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)

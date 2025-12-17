@@ -217,3 +217,43 @@ class GeneticSample(models.Model):
     class Meta:
         verbose_name = "Genetic Sample"
         verbose_name_plural = "Genetic Samples"
+
+
+class BlogPost(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+        ('archived', 'Archived'),
+    ]
+    
+    title = models.CharField(max_length=200, db_index=True)
+    slug = models.SlugField(max_length=200, unique=True, db_index=True)
+    content = models.TextField()
+    excerpt = models.TextField(blank=True, help_text="Short summary of the blog post")
+    author = models.CharField(max_length=100, default="Admin")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    featured_image = models.URLField(blank=True, null=True, help_text="URL to featured image")
+    
+    # Metadata
+    meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
+    tags = models.CharField(max_length=200, blank=True, help_text="Comma-separated tags")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    
+    # Stats
+    view_count = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Blog Post"
+        verbose_name_plural = "Blog Posts"
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['status', '-published_at']),
+        ]
+    
+    def __str__(self):
+        return self.title

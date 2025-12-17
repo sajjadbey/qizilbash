@@ -1,6 +1,9 @@
 # serializers.py
 from rest_framework import serializers
-from .models import GeneticSample, HistoricalPeriod, Country, Province, City, Ethnicity, Tribe, Clan, YDNATree
+from .models import (
+    GeneticSample, HistoricalPeriod, Country, Province, City, 
+    Ethnicity, Tribe, Clan, YDNATree, BlogPost
+)
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -179,3 +182,33 @@ class GeneticSampleSerializer(serializers.ModelSerializer):
                 'root_haplogroup': obj.mt_dna.get_root_haplogroup(),
             }
         return None
+
+
+class BlogPostSerializer(serializers.ModelSerializer):
+    """Serializer for blog posts - read-only"""
+    tags_list = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = BlogPost
+        fields = [
+            'id',
+            'title',
+            'slug',
+            'content',
+            'excerpt',
+            'author',
+            'featured_image',
+            'meta_description',
+            'tags',
+            'tags_list',
+            'created_at',
+            'updated_at',
+            'published_at',
+            'view_count'
+        ]
+    
+    def get_tags_list(self, obj):
+        """Convert comma-separated tags to list"""
+        if obj.tags:
+            return [tag.strip() for tag in obj.tags.split(',')]
+        return []

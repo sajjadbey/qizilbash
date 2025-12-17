@@ -1,7 +1,10 @@
 # admin.py
 from django.contrib import admin
 from leaflet.admin import LeafletGeoAdmin
-from .models import HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, GeneticSample, Ethnicity, Tribe, Clan
+from .models import (
+    HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, 
+    GeneticSample, Ethnicity, Tribe, Clan, BlogPost
+)
 
 
 @admin.register(Country)
@@ -151,3 +154,32 @@ class GeneticSampleAdmin(admin.ModelAdmin):
         'count',
         'description'
     )
+
+
+@admin.register(BlogPost)
+class BlogPostAdmin(admin.ModelAdmin):
+    list_display = ['title', 'author', 'status', 'published_at', 'view_count', 'created_at']
+    list_filter = ['status', 'created_at', 'published_at']
+    search_fields = ['title', 'content', 'tags']
+    prepopulated_fields = {'slug': ('title',)}
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Content', {
+            'fields': ('title', 'slug', 'content', 'excerpt', 'featured_image')
+        }),
+        ('Metadata', {
+            'fields': ('author', 'status', 'tags', 'meta_description')
+        }),
+        ('Dates', {
+            'fields': ('published_at', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+        ('Statistics', {
+            'fields': ('view_count',),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ['created_at', 'updated_at', 'view_count']
+

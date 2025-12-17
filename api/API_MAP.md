@@ -218,6 +218,52 @@ All endpoints are prefixed with the base URL of your Django application.
   ```
 - **Note:** Results are sorted by sample count (descending). Coordinates are calculated from province geometry centroids. The geometry field contains the full province boundary as GeoJSON.
 
+### 3.11 Blog Posts List
+- **Endpoint:** `GET /genetics/blog/`
+- **Description:** List all published blog posts
+- **Query Parameters:**
+  - `tag` - Filter by tag (partial match)
+  - `search` - Search in title, content, and excerpt
+- **Examples:**
+  - `/genetics/blog/` - All published posts
+  - `/genetics/blog/?tag=genetics` - Posts tagged with "genetics"
+  - `/genetics/blog/?search=haplogroup` - Posts containing "haplogroup"
+- **Response:** Array of blog post objects with:
+  - `id` - Blog post ID
+  - `title` - Post title
+  - `slug` - URL-friendly slug
+  - `content` - Full post content (HTML/Markdown)
+  - `excerpt` - Short summary
+  - `author` - Author name
+  - `featured_image` - URL to featured image (can be null)
+  - `meta_description` - SEO meta description
+  - `tags` - Comma-separated tags string
+  - `tags_list` - Array of individual tags
+  - `created_at` - Creation timestamp
+  - `updated_at` - Last update timestamp
+  - `published_at` - Publication timestamp
+  - `view_count` - Number of views
+- **Note:** Only published posts are returned. Results are ordered by publication date (newest first).
+
+### 3.12 Blog Post Detail
+- **Endpoint:** `GET /genetics/blog/<slug>/`
+- **Description:** Get a single blog post by slug and increment view count
+- **Example:** `/genetics/blog/introduction-to-y-dna/`
+- **Response:** Single blog post object (same fields as list endpoint)
+- **Note:** Each request increments the `view_count` by 1. Only published posts are accessible.
+
+### 3.13 Blog Management
+- **Description:** Blog posts can only be created, updated, and deleted through the Django Admin Panel
+- **Admin URL:** `/admin/genetics/blogpost/`
+- **Features:**
+  - Create new posts with title, slug, content, excerpt, tags, etc.
+  - Set post status (draft, published, archived)
+  - Auto-generate slugs from titles
+  - Set publication dates
+  - Upload featured images
+  - Add SEO meta descriptions
+- **Note:** Public API endpoints are read-only. All write operations require admin access.
+
 ---
 
 ## 4. Admin Panel
