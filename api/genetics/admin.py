@@ -1,5 +1,7 @@
 # admin.py
 from django.contrib import admin
+from django import forms
+from django.db import models
 from leaflet.admin import LeafletGeoAdmin
 from .models import (
     HistoricalPeriod, Country, Province, City, YDNATree, MTDNATree, 
@@ -156,8 +158,28 @@ class GeneticSampleAdmin(admin.ModelAdmin):
     )
 
 
+class BlogPostAdminForm(forms.ModelForm):
+    """Custom form for BlogPost with enhanced Markdown editor"""
+    
+    class Meta:
+        model = BlogPost
+        fields = '__all__'
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'rows': 20,
+                'class': 'markdown-editor',
+                'style': 'font-family: monospace; width: 100%;'
+            }),
+            'excerpt': forms.Textarea(attrs={
+                'rows': 3,
+                'style': 'width: 100%;'
+            }),
+        }
+
+
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
+    form = BlogPostAdminForm
     list_display = ['title', 'author', 'status', 'published_at', 'view_count', 'created_at']
     list_filter = ['status', 'created_at', 'published_at']
     search_fields = ['title', 'content', 'tags']
@@ -167,7 +189,8 @@ class BlogPostAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Content', {
-            'fields': ('title', 'slug', 'content', 'excerpt', 'featured_image')
+            'fields': ('title', 'slug', 'content', 'excerpt', 'featured_image'),
+            'description': 'Content field supports Markdown formatting with toolbar (Bold, Italic, Headers, Lists, Links, Images, Code blocks)'
         }),
         ('Metadata', {
             'fields': ('author', 'status', 'tags', 'meta_description')
@@ -182,4 +205,13 @@ class BlogPostAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = ['created_at', 'updated_at', 'view_count']
+    
+    class Media:
+        css = {
+            'all': ('https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css',)
+        }
+        js = (
+            'https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js',
+            'admin/js/markdown_editor.js',
+        )
 

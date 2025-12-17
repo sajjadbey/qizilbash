@@ -232,7 +232,7 @@ All endpoints are prefixed with the base URL of your Django application.
   - `id` - Blog post ID
   - `title` - Post title
   - `slug` - URL-friendly slug
-  - `content` - Full post content (HTML/Markdown)
+  - `content` - Full post content in Markdown format
   - `excerpt` - Short summary
   - `author` - Author name
   - `featured_image` - URL to featured image (can be null)

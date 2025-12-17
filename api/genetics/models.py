@@ -228,7 +228,7 @@ class BlogPost(models.Model):
     
     title = models.CharField(max_length=200, db_index=True)
     slug = models.SlugField(max_length=200, unique=True, db_index=True)
-    content = models.TextField()
+    content = models.TextField(help_text="Blog post content in Markdown format")
     excerpt = models.TextField(blank=True, help_text="Short summary of the blog post")
     author = models.CharField(max_length=100, default="Admin")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
