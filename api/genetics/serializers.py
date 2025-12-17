@@ -187,6 +187,7 @@ class GeneticSampleSerializer(serializers.ModelSerializer):
 class BlogPostSerializer(serializers.ModelSerializer):
     """Serializer for blog posts - read-only"""
     tags_list = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
     
     class Meta:
         model = BlogPost
@@ -206,6 +207,16 @@ class BlogPostSerializer(serializers.ModelSerializer):
             'published_at',
             'view_count'
         ]
+    
+    def get_content(self, obj):
+        """
+        Return content with normalized line endings.
+        Ensures consistent \n line breaks for proper Markdown rendering.
+        """
+        if obj.content:
+            # Normalize line endings: convert \r\n to \n
+            return obj.content.replace('\r\n', '\n').replace('\r', '\n')
+        return ''
     
     def get_tags_list(self, obj):
         """Convert comma-separated tags to list"""
